@@ -1,17 +1,15 @@
 name: LemonKernel
 
 on:
-  push:
-    branches:
-      - test
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Check Out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Current Date
         uses: szenius/set-timezone@v1.2
@@ -22,15 +20,34 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get upgrade -y
-          sudo apt-get install build-essential gcc-aarch64-linux-gnu -y
+          sudo apt install make libssl-dev curl bc pkg-config m4 libtool automake autoconf libelf-dev bzip2 p7zip-full jq python3 python-is-python3 -y 
 
       - name: Build
-        run: ./build.sh
+        run: ./build/build.sh
 
-      - name: Upload to Telegram
-        uses: appleboy/telegram-action@master
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          to: ${{ secrets.TELEGRAM_CHAT2_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          document: Lemonade-a505f-*.zip
-          message: "New Lemonade Kernel Update! Download Now!!"
+          path: out/
+
+      - name: Create GitHub Release
+        if: github.run_number == 1
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: LemonadeKernel
+          name: LemonadeKernel
+          body: |
+            Automated kernel build for ALL devices and variants
+            Your warranty is now void. I am not responsible for bricked devices, dead SD cards.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload ZIPs to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: LemonadeKernel
+          files: out/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
