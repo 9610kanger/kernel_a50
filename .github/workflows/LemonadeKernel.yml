@@ -23,7 +23,7 @@ jobs:
           sudo apt install make libssl-dev curl bc pkg-config m4 libtool automake autoconf libelf-dev bzip2 p7zip-full jq python3 python-is-python3 -y 
 
       - name: Build
-        run: ./build/build.sh
+        run: ./build.sh
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
